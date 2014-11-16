@@ -157,7 +157,7 @@ medianstepsbydayfill
 # Q1 - Create a new factor variable in the dataset with two levels – “weekday” 
 # and “weekend” indicating whether a given date is a weekday or weekend day.
 
-# convert the data factor variable into dates
+# convert the date factor variable into dates
 activityfilled$date <- as.Date(activityfilled$date, "%Y-%m-%d")
 
 # add new column to dataframe to indicate type of day
