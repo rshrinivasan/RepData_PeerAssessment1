@@ -8,6 +8,7 @@ Reproducible Research: Peer Assessment 1
 #setwd("~/Documents/Coursera/datascience_jh/represearch/RepData_PeerAssessment1")
 # set echo = TRUE globally. This is the default, setting it explicitly here
 opts_chunk$set(echo = TRUE)
+
 # we will be using the packages knitr to convert to markdown and html
 # Using knit2html will generate the .md and .html files in the same directory
 # as the working directory. A directory called figures will also be created 
@@ -83,6 +84,67 @@ avgstepsbyinterval[rowWithMax, ]
 
 ## Imputing missing values
 
+```r
+# Q1. Calculate and report the total number of missing values in the dataset 
+# (i.e. the total number of rows with NAs)
+
+# subset activity data frame to get rows with steps = NA
+onlyNA <- subset(activity, is.na(steps))
+rowcountNA <- nrow(onlyNA)
+```
+#### The total number of missing values in the dataset is 2304.
+
+```r
+# Q2 - Devise a strategy for filling in all of the missing values in the dataset. 
+# The strategy does not need to be sophisticated. For example, you could use the
+# mean/median for that day, or the mean for that 5-minute interval, etc.
+# use sqldf for getting and setting missing values
+# use the mean value for an interval to substitute for NAs
+
+library(sqldf)
+
+# create a dataframe that combines the avgstepsbyinterval data frame with the 
+# onlyNA data frame
+interimdf <- sqldf("select round(a.steps) a_st, a.interval a_int, na.steps na_st,na.interval na_int,
+na.date from avgstepsbyinterval a join onlyNA na on a.interval = na.interval")
+
+# create a new activity dataframe with NAs filled in
+activityfilled <- sqldf("select a.date, a.interval, coalesce(t.a_st,a.steps) steps
+                        from activity a left outer join tst t 
+                        on (a.date = t.date and a.interval = t.na_int)")
+
+# calculate total number of steps grouped by day
+totstepsbydayfill <- aggregate(steps~date, activityfilled, sum)
+
+# create histogram
+hist(totstepsbydayfill$steps, col = "blue", main = "Total Steps taken each day",
+      xlab = "Total number of steps taken each day")
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1.png) 
+
+```r
+meanstepsbydayfill <- round(mean(totstepsbydayfill$steps))
+meanstepsbydayfill
+```
+
+```
+## [1] 10766
+```
+
+```r
+medianstepsbydayfill <- median(totstepsbydayfill$steps)
+medianstepsbydayfill
+```
+
+```
+## [1] 10762
+```
+#### The mean for the dataset with NAs present is 1.0766 &times; 10<sup>4</sup>.
+#### The mean for the dataset with NAs filled in is 1.0766 &times; 10<sup>4</sup>.
+#### The median for the dataset with NAs present is 10765.
+#### The median for the dataset iwth NAs filled in is 10762.
+#### Imputing missing data has no difference on the mean but has a slight impact on the median.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
