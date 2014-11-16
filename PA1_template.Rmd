@@ -1,9 +1,6 @@
+Reproducible Research: Peer Assessment 1
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+
 
 ## Global options and parameters
 ```{r setglobals}
@@ -11,6 +8,9 @@ output:
 # set echo = TRUE globally. This is the default, setting it explicitly here
 opts_chunk$set(echo = TRUE)
 # we will be using the packages knitr to convert to markdown and html
+# Using knit2html will generate the .md and .html files in the same directory
+# as the working directory. A directory called figures will also be created 
+# under the working directory if plots are generated.
 library(knitr)
 
 ```
@@ -37,11 +37,31 @@ hist(totstepsbyday$steps, col = "orange", main = "Total Steps taken each day",
 meanstepsbyday <- round(mean(totstepsbyday$steps))
 medianstepsbyday <- median(totstepsbyday$steps)
 ```
-### The mean and median total number of steps taken per day are `r meanstepsbyday` and `r medianstepsbyday`
+#### The mean and median total number of steps taken per day are `r meanstepsbyday` and `r medianstepsbyday`
 
 
 ## What is the average daily activity pattern?
+```{r avgDailyActivityPattern}
+# Q1 - Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) 
+# and the average number of steps taken, averaged across all days (y-axis)
 
+# calculate the average number of steps grouped by interval
+avgstepsbyinterval <- aggregate(steps~interval, activity, mean)
+# generate line chart
+plot(avgstepsbyinterval$interval, avgstepsbyinterval$steps, type = 'l', col = 1, 
+     main = "Average number of steps across all days",
+     xlab = "Interval in minutes",
+     ylab = "Average number of steps")
+
+# Q2 - Which 5-minute interval, on average across all the days in the dataset, 
+# contains the maximum number of steps?
+
+# find the row that has the maximum number of steps
+rowWithMax <- which.max(avgstepsbyinterval$steps)
+# get the values for the interval and steps corresponding to the rowWithMax row
+avgstepsbyinterval[rowWithMax, ]
+```
+#### The interval `r avgstepsbyinterval[rowWithMax, ]$interval` corresponds to the maximum average number of steps  `r avgstepsbyinterval[rowWithMax, ]$steps`
 
 
 ## Imputing missing values
