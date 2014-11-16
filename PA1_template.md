@@ -1,4 +1,4 @@
-Reproducible Research: Peer Assessment 1
+Reproducible Research: Peer Assessment 1 (Nov. 2014)
 ---
 
 
@@ -9,11 +9,15 @@ Reproducible Research: Peer Assessment 1
 # set echo = TRUE globally. This is the default, setting it explicitly here
 opts_chunk$set(echo = TRUE)
 
+# disable scientific notation
+options(scipen = 9)
 # we will be using the packages knitr to convert to markdown and html
 # Using knit2html will generate the .md and .html files in the same directory
 # as the working directory. A directory called figures will also be created 
 # under the working directory if plots are generated.
 library(knitr)
+# load ggplot2 package for plots
+library(ggplot2)
 ```
 
 
@@ -45,7 +49,7 @@ hist(totstepsbyday$steps, col = "orange", main = "Total Steps taken each day",
 meanstepsbyday <- round(mean(totstepsbyday$steps))
 medianstepsbyday <- median(totstepsbyday$steps)
 ```
-#### The mean and median total number of steps taken per day are 1.0766 &times; 10<sup>4</sup> and 10765
+#### The mean and median total number of steps taken per day are 10766 and 10765
 
 
 ## What is the average daily activity pattern?
@@ -140,11 +144,52 @@ medianstepsbydayfill
 ```
 ## [1] 10762
 ```
-#### The mean for the dataset with NAs present is 1.0766 &times; 10<sup>4</sup>.
-#### The mean for the dataset with NAs filled in is 1.0766 &times; 10<sup>4</sup>.
+#### The mean for the dataset with NAs present is 10766.
+#### The mean for the dataset with NAs filled in is 10766.
 #### The median for the dataset with NAs present is 10765.
-#### The median for the dataset iwth NAs filled in is 10762.
+#### The median for the dataset with NAs filled in is 10762.
 #### Imputing missing data has no difference on the mean but has a slight impact on the median.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+# Q1 - Create a new factor variable in the dataset with two levels – “weekday” 
+# and “weekend” indicating whether a given date is a weekday or weekend day.
+
+# convert the data factor variable into dates
+activityfilled$date <- as.Date(activityfilled$date, "%Y-%m-%d")
+
+# add new column to dataframe to indicate type of day
+# The wday component of a POSIXlt object is the numeric weekday 
+# (0-6 starting on Sunday).
+# In order to match up with the character vector add 1 to the value
+# returned by wday. The returned value will be a char datatype
+activityfilled$daytype <- c("Weekend", "Weekday", "Weekday", "Weekday", "Weekday", 
+  "Weekday", "Weekend")[as.POSIXlt(activityfilled$date)$wday + 1]
+
+# convert to factor
+activityfilled[ , "daytype"] <- as.factor(activityfilled[, "daytype"])
+str(activityfilled)
+```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ steps   : int  2 0 0 0 0 2 1 1 0 1 ...
+##  $ daytype : Factor w/ 2 levels "Weekday","Weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+```r
+# Q2 - Make a panel plot containing a time series plot (i.e. type = "l") of 
+# the 5-minute interval (x-axis) and the average number of steps taken, 
+# averaged across all weekday days or weekend days (y-axis).
+avgstepsbyintday <- aggregate(steps ~ interval + daytype , activityfilled, mean)
+qplot(interval, steps, data = avgstepsbyintday, color = daytype, geom = c("line"),
+      xlab = "Interval in Minutes", ylab = "Average Number of steps",
+      main = "") + facet_wrap(~ daytype, ncol = 1)
+```
+
+![plot of chunk activityPatterns](figure/activityPatterns.png) 
+
